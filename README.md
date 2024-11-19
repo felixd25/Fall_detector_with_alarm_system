@@ -1,2 +1,2 @@
 # Fall_detector_with_alarm_system
-ECE190 Project
+ECE198 Project
