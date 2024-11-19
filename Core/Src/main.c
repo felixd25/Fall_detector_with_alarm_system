@@ -25,7 +25,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "OLED.h"
 #include "app_mpu6050.h"
 #include "stdio.h"
 #include <string.h>

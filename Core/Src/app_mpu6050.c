@@ -3,7 +3,6 @@
 #include "app_mpu6050.h"
 #include "i2c.h"
 #include "math.h"
-#include "OLED.h"
 #include "stm32f4xx_hal_i2c.h"
 
 static float ax, ay, az, gx, gy, gz, temperature, yaw, pitch, roll;
