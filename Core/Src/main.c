@@ -6,18 +6,20 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
-  * All rights reserved.
+  * <h2><center>&copy; Copyright (c) 2024 STMicroelectronics.
+  * All rights reserved.</center></h2>
   *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
+  * This software component is licensed by ST under BSD 3-Clause license,
+  * the "License"; You may not use this file except in compliance with the
+  * License. You may obtain a copy of the License at:
+  *                        opensource.org/licenses/BSD-3-Clause
   *
   ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdbool.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -88,28 +90,32 @@ int main(void)
 
   while (1)
   {
-    // Activate buzzer
-    HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_SET);  // Turn buzzer ON
+    /* Read the state of the blue push button (connected to PC13) */
+    if (HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) == GPIO_PIN_RESET)  // Button is pressed
+    {
+    	while(true) {
+			// Button pressed, activate buzzer and LED
+			HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_SET);  // Turn buzzer ON
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);        // Turn on LED
 
-    // Turn on LD2 immediately
-    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+			// Send "Calling 911" message via UART
+			char message[] = "Calling 911";
+			HAL_UART_Transmit(&huart1, (uint8_t*)message, sizeof(message) - 1, HAL_MAX_DELAY);
 
-    // Send "Calling 911" message
-    char message[] = "Calling 911";
-    HAL_UART_Transmit(&huart1, (uint8_t*)message, sizeof(message) - 1, HAL_MAX_DELAY);
+			// Start UART receive interrupt
+			HAL_UART_Receive_IT(&huart1, &rxData, 1);
 
-    // Start UART receive interrupt
-    HAL_UART_Receive_IT(&huart1, &rxData, 1);
+			// Add a delay to simulate the buzzer sound duration (e.g., 2 seconds)
+			HAL_Delay(1500);
 
-    // Add a delay to simulate the buzzer sound duration (e.g., 2 seconds)
-    HAL_Delay(1500);
+			// Deactivate buzzer and LED
+			HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);  // Turn buzzer OFF
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);        // Turn off LED
 
-    // Deactivate buzzer
-    HAL_GPIO_WritePin(BUZZER_GPIO_Port, BUZZER_Pin, GPIO_PIN_RESET);  // Turn buzzer OFF
-
-    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-
-    HAL_Delay(1500);
+			// Add a small delay to debounce the button (optional)
+			HAL_Delay(1500);
+    	}
+    }
   }
   /* USER CODE END 2 */
 }
@@ -190,11 +196,11 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pin : B1_Pin */
-  GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pin : PC13 (blue push button) */
+  GPIO_InitStruct.Pin = BUTTON_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;  // Enable internal pull-up resistor
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LD2_Pin */
   GPIO_InitStruct.Pin = LD2_Pin;
@@ -210,7 +216,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(BUZZER_GPIO_Port, &GPIO_InitStruct);
 
-  /* EXTI interrupt init*/
+  /* EXTI interrupt init */
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 }

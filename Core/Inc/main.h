@@ -7,13 +7,15 @@ extern "C" {
 
 #include "stm32f4xx_hal.h"
 
-// Add the following defines if not already present
+// LED pin definitions
 #define LD2_Pin GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
-#define B1_Pin GPIO_PIN_13
-#define B1_GPIO_Port GPIOC
 
-// Add buzzer pin definitions
+// Blue push button pin definition (PC13)
+#define BUTTON_Pin GPIO_PIN_13
+#define BUTTON_GPIO_Port GPIOC
+
+// Buzzer pin definitions
 #define BUZZER_Pin GPIO_PIN_0
 #define BUZZER_GPIO_Port GPIOA
 
