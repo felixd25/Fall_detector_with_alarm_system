@@ -47,7 +47,7 @@
 
 /* USER CODE BEGIN PV */
 
-//串口中断响应函数
+//
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 
@@ -97,8 +97,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  OLED_Init();
-  char str[100];
+
   /*for (uint8_t i = 1; i < 128; i++) {
 	  HAL_StatusTypeDef result = HAL_I2C_IsDeviceReady(&hi2c1, i << 1, 1, HAL_MAX_DELAY);
 	  if (result == HAL_OK) {
@@ -122,6 +121,8 @@ int main(void)
   MPU6050_Init();
   float accel[3], temp, gyro[3], angle[3];
   uint8_t p_buffer[14];
+  char str[100];
+  HAL_StatusTypeDef result;
 
   /* USER CODE END 2 */
 
@@ -129,13 +130,17 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_StatusTypeDef result = HAL_I2C_IsDeviceReady(&hi2c1, 68 << 1, 1, HAL_MAX_DELAY);
+	  result = HAL_I2C_IsDeviceReady(&hi2c1, 68 << 1, 1, HAL_MAX_DELAY);
+
 	  if (result == HAL_BUSY) {
 	  	sprintf(str, "I2C Bus busy at address 0x%02X\r\n", 68);
 	  	I2C_ClearBusyFlagErratum(&hi2c1, 1000);
 	  }
       MPU6050_Proc();
       MPU6050_GetResult(accel, &temp, gyro, angle, p_buffer);
+      if (accel[0] == 0.0f && accel[1] == 0.0f && accel[2] == 0.0f) {
+     	      MPU6050_Init(); // Reinitialize the MPU6050
+      }
       /*if (HAL_I2C_IsDeviceReady(&hi2c1, MPU6050, 3, HAL_MAX_DELAY) != HAL_OK) {
               sprintf(str, "I2C device not ready\r\n");
               HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
@@ -145,14 +150,26 @@ int main(void)
               p_buffer[0], p_buffer[1], p_buffer[2], p_buffer[3], p_buffer[4], p_buffer[5], p_buffer[6], p_buffer[7],
 			  p_buffer[8], p_buffer[9], p_buffer[10], p_buffer[11], p_buffer[12], p_buffer[13]);*/
       //HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
-      sprintf(str, "ax = %.3f ay = %.3f az = %.3f gx = %.3f gy = %.3f gz = %.3f yaw = %.3f roll = %.3f pitch = %.3f temp = %.3f;\r\n", accel[0], accel[1], accel[2], gyro[0], gyro[1], gyro[2], angle[0], angle[1], angle[2], temp);
+      if(angle[1] >= 45.0 || angle[1] <= -45.0 || angle[2] <= -45.0 || angle[2] >= 45.0){
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
+		  HAL_GPIO_WritePin(LD2_GPIO_Port,LD2_Pin, GPIO_PIN_SET);
+		  //HAL_Delay(10);
+	  }
+	  // Button is not pressed
+	  else{
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(LD2_GPIO_Port,LD2_Pin, GPIO_PIN_RESET);
+	  }
+      sprintf(str, "ax = %.3f \t ay = %.3f \t az = %.3f \t gx = %.3f \t gy = %.3f \t gz = %.3f \t yaw = %.3f \t roll = %.3f \t pitch = %.3f \t temp = %.3f;\r\n", accel[0], accel[1], accel[2], gyro[0], gyro[1], gyro[2], angle[0], angle[1], angle[2], temp);
       HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
+      // Button is pressed
+
 
 //    //Read Raw data from MPU6050
 //    HAL_I2C_Master_Transmit(&hi2c1, MPU6050, 0x3C, 1, HAL_MAX_DELAY);
 //    uint8_t dat;
 //    HAL_I2C_Master_Receive(&hi2c1, MPU6050, &dat, 1, HAL_MAX_DELAY);
-    HAL_Delay(1);
+//    HAL_Delay(1);
 //    OLED_ShowHexNum(0, 0, dat, 2, OLED_8X16);
 //    OLED_Update();
 

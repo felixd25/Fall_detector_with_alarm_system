@@ -28,7 +28,7 @@ Core/Src/app_mpu6050.o: ../Core/Src/app_mpu6050.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/i2c.h ../Core/Inc/main.h ../Core/Inc/stm32f4xx_hal.h \
- ../Core/Inc/OLED.h ../Core/Inc/OLED_Data.h
+ ../Core/Inc/MahonyAHRS.h
 ../Core/Inc/app_mpu6050.h:
 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h:
 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xe.h:
@@ -61,5 +61,4 @@ Core/Src/app_mpu6050.o: ../Core/Src/app_mpu6050.c \
 ../Core/Inc/i2c.h:
 ../Core/Inc/main.h:
 ../Core/Inc/stm32f4xx_hal.h:
-../Core/Inc/OLED.h:
-../Core/Inc/OLED_Data.h:
+../Core/Inc/MahonyAHRS.h:

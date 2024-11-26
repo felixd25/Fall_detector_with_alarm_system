@@ -4,9 +4,16 @@
 #include "i2c.h"
 #include "math.h"
 #include "stm32f4xx_hal_i2c.h"
+#include "MahonyAHRS.h"
+#include <string.h>
 
 static float ax, ay, az, gx, gy, gz, temperature, yaw, pitch, roll;
+static float bias_ax = 0, bias_ay = 0, bias_az = 0;
+static float bias_gx = 0, bias_gy = 0, bias_gz = 0;
 uint8_t buffer[14] = {0};
+static int NUM_SAMPLE = 100;
+int ini_offset = 100;
+char str1[100];
 
 // I2C Initialization
 void i2c_init(void)
@@ -77,24 +84,86 @@ void MPU6050_Proc(void)
     gy = (int16_t)(buffer[10] << 8 | buffer[11]) / 16.4f;
     gz = (int16_t)(buffer[12] << 8 | buffer[13]) / 16.4f;
 
+    if(ini_offset > 0){
+			// Replace these lines with actual sensor data collection
+		//bias_az += az;
+		bias_gx += gx;
+		bias_gy += gy;
+		bias_gz += gz;
+		ini_offset--;
+    }else if(ini_offset == 0){
+		//bias_az /= NUM_SAMPLE;
+		bias_gx /= NUM_SAMPLE;
+		bias_gy /= NUM_SAMPLE;
+		bias_gz /= NUM_SAMPLE;
+		ini_offset --;
+    }else{
+    	//az -= bias_az;
+    	//az += 1;
+    	gx -= bias_gx;
+    	gy -= bias_gy;
+    	gz -= bias_gz;
 
-    //Calculate Euler Angle using Accelerator
-    float pitch_a = -atan2(ax, az) * 180.0f / PI;
-    float roll_a = atan2(ay, az) * 180.0f / PI;
+    	//Calculate Euler Angle using Accelerator
+		float pitch_a = -atan2(ax, az) * 180.0f / PI;
+		float roll_a = atan2(ay, az) * 180.0f / PI;
 
-    //Calculate Euler Angle using Gyroscope
-    float yaw_g = yaw + gz * DT;
-    float pitch_g = pitch + gy * DT;
-    float roll_g = roll + gx * DT;
+		//Calculate Euler Angle using Gyroscope
+		float yaw_g = yaw + gz * DT;
+		float pitch_g = pitch + gy * DT;
+		float roll_g = roll + gx * DT;
 
-    //Complementary filtering
-    yaw = yaw_g;
-    pitch = ALPHA * pitch_g + (1 - ALPHA) * pitch_a;
-    roll = ALPHA * roll_g + (1 - ALPHA) * roll_a;
+		//Complementary filtering
+		yaw = yaw_g;
+		pitch = ALPHA * pitch_g + (1 - ALPHA) * pitch_a;
+		roll = ALPHA * roll_g + (1 - ALPHA) * roll_a;
+
+    }
+    //sprintf(str1, "gx = %.3f gy = %.3f gz = %.3f;\r\n", bias_gx, bias_gy, bias_gz );
+
+
+
+  /*  // Scale gyroscope data to radians/sec
+    gx = (gx - bias_gx) * (PI / 180.0f);
+    gy = (gy - bias_gy) * (PI / 180.0f);
+    gz = (gz - bias_gz) * (PI / 180.0f);
+
+    // Normalize accelerometer data
+    float norm = invSqrt(ax * ax + ay * ay + az * az);
+    ax = ax * norm;
+    ay = ay * norm;
+    az = az * norm;
+
+    /*gx *= (PI / 180.0f);
+    gy *= (PI / 180.0f);
+    gz *= (PI / 180.0f);
+
+       // Normalize accelerometer data
+    float norm = invSqrt(ax * ax + ay * ay + az * az);
+    ax *= norm;
+    ay *= norm;
+    az *= norm;
+
+
+    // Update the Mahony filter
+	MahonyAHRSupdateIMU(gx, gy, gz, ax, ay, az);
+
+	// Calculate Euler angles from the quaternion
+	roll = atan2f(2.0f * (q0 * q1 + q2 * q3), 1.0f - 2.0f * (q1 * q1 + q2 * q2));
+	pitch = asinf(2.0f * (q0 * q2 - q3 * q1));
+	yaw = atan2f(2.0f * (q0 * q3 + q1 * q2), 1.0f - 2.0f * (q2 * q2 + q3 * q3));
+
+	// Convert from radians to degrees
+	roll *= (180.0f / PI);
+	pitch *= (180.0f / PI);
+	yaw *= (180.0f / PI);*/
+
+
 }
 
 void MPU6050_GetResult(float *pAccel, float *pTemp, float *pGyro, float *pAngle, uint8_t *pBuffer)
 {
+
     pAccel[0] = ax;
     pAccel[1] = ay;
     pAccel[2] = az;
@@ -109,5 +178,7 @@ void MPU6050_GetResult(float *pAccel, float *pTemp, float *pGyro, float *pAngle,
     pAngle[1] = roll;
     pAngle[2] = pitch;
 
-    pBuffer = buffer;
+    //pBuffer = buffer;
 }
+
+

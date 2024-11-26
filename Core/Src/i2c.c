@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "i2c.h"
 #include <stdbool.h>
+
 /* USER CODE BEGIN 0 */
 #define I2C1_SCL_Pin GPIO_PIN_6
 #define I2C1_SCL_GPIO_Port GPIOB
