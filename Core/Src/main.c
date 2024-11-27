@@ -150,7 +150,7 @@ int main(void)
               p_buffer[0], p_buffer[1], p_buffer[2], p_buffer[3], p_buffer[4], p_buffer[5], p_buffer[6], p_buffer[7],
 			  p_buffer[8], p_buffer[9], p_buffer[10], p_buffer[11], p_buffer[12], p_buffer[13]);*/
       //HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
-      if(angle[1] >= 45.0 || angle[1] <= -45.0 || angle[2] <= -45.0 || angle[2] >= 45.0){
+      if(angle[1] >= 45.0 || angle[1] <= -45.0 || angle[2] <= -45.0 || angle[2] >= 45.0 ||  HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET){
 		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(LD2_GPIO_Port,LD2_Pin, GPIO_PIN_SET);
 		  //HAL_Delay(10);
