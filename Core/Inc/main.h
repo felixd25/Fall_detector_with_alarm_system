@@ -19,6 +19,9 @@ extern "C" {
 #define BUZZER_Pin GPIO_PIN_0
 #define BUZZER_GPIO_Port GPIOA
 
+#define INPUT_Pin GPIO_PIN_9
+#define INPUT_GPIO_Port GPIOB
+
 #ifdef __cplusplus
 }
 #endif
